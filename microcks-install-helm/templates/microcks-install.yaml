@@ -17,6 +17,15 @@ spec:
     replicas: {{ .Values.keycloak.replicas }}
   mongodb:
     install: {{ .Values.mongodb.install }}
+    uri: {{ .Values.mongodb.uri }}
+    ssl:
+      enabled: {{ .Values.mongodb.ssl.enabled }}
+      certificateSecret: {{ .Values.mongodb.ssl.certificateSecret }}
+    database: {{ .Values.mongodb.database }}
+    secretRef:
+      secret: {{ .Values.mongodb.secretRef.secret }}
+      usernameKey: {{ .Values.mongodb.secretRef.usernameKey }}
+      passwordKey: {{ .Values.mongodb.secretRef.passwordKey }}
     persistent: {{ .Values.mongodb.persistent }}
     volumeSize: {{ .Values.mongodb.volumeSize }}
     replicas: {{ .Values.mongodb.replicas }}

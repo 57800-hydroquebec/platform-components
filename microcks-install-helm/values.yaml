@@ -14,7 +14,16 @@ keycloak:
   replicas: 1
 
 mongodb:
-  install: true
+  install: false
+  uri: mongodb://docdb-2023-10-03-19-10-02.crdaiu93dbxb.ca-central-1.docdb.amazonaws.com:27017
+  database: microcks
+  ssl:
+    enabled: true
+    certificateSecret: mongodb-tls-secret 
+  secretRef:
+    secret: mongodb
+    usernameKey: database-user
+    passwordKey: database-password
   persistent: true
   volumeSize: 2Gi
   replicas: 1
