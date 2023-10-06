@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: backstage-ci
+  name: cert-issuer
   namespace: openshift-gitops
 spec:
   project: default
   source:
-    repoURL: https://github.com/janus-api-idp/backstage-showcase.git
-    path: .tekton
+    repoURL: https://github.com/janus-api-idp/platform-components.git
+    path: cert-issuer-helm
     targetRevision: main
   destination:
     server: https://kubernetes.default.svc
-    namespace: developer-hub
+    namespace: cert-manager
   syncPolicy:
     automated: 
       prune: true
