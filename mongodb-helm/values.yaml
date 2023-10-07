@@ -1,0 +1,44 @@
+## Reference to one or more secrets to be used when pulling images
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+# - name: "image-pull-secret"
+
+namespace: mongodb
+
+# Deploys MongoDB with `resource` attributes.
+createResource: true
+resource:
+  name: mongodb
+  namespace: mongodb
+  version: 6.0.5
+  members: 3
+  tls:
+    enabled: true
+
+    # Installs Cert-Manager in this cluster.
+    useX509: false
+    sampleX509User: false
+    useCertManager: true
+    certificateKeySecretRef: tls-certificate
+    caCertificateSecretRef: tls-ca-key-pair
+    certManager:
+      certDuration: 8760h   # 365 days
+      renewCertBefore: 720h   # 30 days
+
+  # users: []
+  # if using the MongoDBCommunity Resource, list any users to be added to the resource
+  users:
+  - name: my-user
+    db: admin
+    passwordSecretRef: # a reference to the secret that will be used to generate the user's password
+      name: my-user-password
+    roles:
+      - name: clusterAdmin
+        db: admin
+      - name: userAdminAnyDatabase
+        db: admin
+      - name: readWriteAnyDatabase
+        db: admin
+      - name: dbAdminAnyDatabase
+        db: admin
+    scramCredentialsSecretName: my-scram

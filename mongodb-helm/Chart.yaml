@@ -1,0 +1,12 @@
+apiVersion: v2
+name: mongodb-helm
+description: A Helm chart for Kubernetes
+version: 0.8.2
+appVersion: 0.8.2
+kubeVersion: '>=1.16-0'
+keywords:
+- mongodb
+- database
+- nosql
+type: application
+

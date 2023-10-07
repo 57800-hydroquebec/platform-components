@@ -1,3 +1,7 @@
 backstage-helm/charts/
 microcks-helm/charts/
 microcks-install-helm/charts/
+mongodb-helm/charts/
+mongodb-operator-helm/charts/
+mongodb-helm/Chart.lock
+mongodb-operator-helm/Chart.lock
