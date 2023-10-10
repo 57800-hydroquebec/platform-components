@@ -1,0 +1,42 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: yeoman-springboot-npm-pipeline
+  namespace: gitea
+spec:
+  workspaces:
+  - name: npm-repo
+
+  params:
+    - name: git-url
+      type: string
+      description: "Upstream Source Repository Url"
+    - name: git-revision
+      type: string
+      description: "Upstream source code revision to pull"
+
+  tasks:
+  - name: clone
+    taskRef:
+      name: git-clone
+      kind: ClusterTask
+    params:
+      - name: url
+        value: $(params.git-url)
+      - name: revision
+        value: $(params.git-revision)
+    workspaces:
+    - name: output
+      workspace: npm-repo
+
+  - name: build
+    taskRef:
+      name: yeoman-nodejs
+      kind: Task
+    runAfter: ["clone"]
+    params:
+    - name: GOALS
+      value: ["install"]
+    workspaces:
+    - name: output
+      workspace: npm-repo

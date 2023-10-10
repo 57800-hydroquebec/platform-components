@@ -1,0 +1,24 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: yeoman-springboot-pipeline-run
+  namespace: gitea
+spec:
+  pipelineRef:
+    name: yeoman-springboot-npm-pipeline
+  workspaces:
+  - name: npm-settings
+    emptyDir: {}
+  - name: npm-repo
+    volumeClaimTemplate:
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+  params:
+  - name: git-revision
+    value: generator-cicd
+  - name: git-url
+    value: https://github.com/janus-api-idp/yeoman-generators-spring-boot.git
