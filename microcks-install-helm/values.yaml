@@ -17,10 +17,10 @@ mongodb:
   install: false
   uri: mongodb-0.mongodb-svc.mongodb.svc.cluster.local:27017
   database: admin
-  ssl:
-    enabled: true
-    certificateSecret: tls-certificate
-    certificateAuthoritySecret: tls-ca-key-pair
+  # ssl:
+  #   enabled: true
+  #   certificateSecret: tls-certificate
+  #   certificateAuthoritySecret: tls-ca-key-pair
   secretRef:
     secret: mongodb-admin-my-user # <mongodb-resource-name>-<database>-<username> Metadata values from Mongodb helm chart
     usernameKey: username

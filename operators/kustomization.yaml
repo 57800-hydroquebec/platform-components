@@ -5,3 +5,4 @@ resources:
   - cert-manager
   - openshift-pipelines
   - microcks
+  - mongodb
