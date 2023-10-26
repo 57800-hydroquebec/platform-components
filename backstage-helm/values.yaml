@@ -86,7 +86,7 @@ upstream:
       enabled:
         keycloak: true
       permission:
-        enabled: false
+        enabled: true
         rbac:
           admin:
             users:
