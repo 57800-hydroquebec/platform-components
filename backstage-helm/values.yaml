@@ -33,6 +33,9 @@ upstream:
         baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
 
       backend:
+        auth:
+          keys:
+            - secret: GwzS7VbL++GImTEqr9SEZhtiJf/gsHYP
         baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
         cors:
           origin: 'https://{{- include "janus-idp.hostname" . }}'
