@@ -149,6 +149,7 @@ upstream:
     extraVolumeMounts:
       - name: backstage-rbac
         mountPath: /app/rbac.csv
+        subPath: rbac.csv
 
   service:
     ports:
