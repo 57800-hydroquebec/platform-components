@@ -82,6 +82,15 @@ upstream:
           oauth2Proxy: {}
       enabled:
         keycloak: true
+      permission:
+        enabled: true
+        rbac:
+          admin:
+            users:
+              - name: group:default/backstage-admins
+          policies-csv-file: /app/rbac.csv
+          database:
+            enabled: false
 
     extraEnvVars:
     - name: POSTGRESQL_ADMIN_PASSWORD
@@ -130,6 +139,13 @@ upstream:
         - '--upstream=http://localhost:7007'
         - '--http-address=0.0.0.0:4180'
         - '--skip-provider-button'
+    extraVolumes:
+      - name: backstage-rbac
+        configMap:
+          name: backstage-rbac
+    extraVolumeMounts:
+      - name: backstage-rbac
+        mountPath: /app/rbac.csv
 
   service:
     ports:
