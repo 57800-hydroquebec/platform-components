@@ -1,0 +1,13 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: backstage-rbac
+data:
+  rbac.csv: |
+    p, role:default/operators, catalog-entity, read, allow
+    p, role:default/operators, catalog.entity.create, use, allow
+    p, role:default/developers, catalog-entity, read, allow
+    p, role:default/developers, catalog.entity.create, use, deny
+
+    g, group:default/operators, role:default/operators
+    g, group:default/developers, role:default/developers
