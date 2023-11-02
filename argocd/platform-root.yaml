@@ -16,9 +16,9 @@ spec:
         - name: gitRef
           value: main
         - name: clusterBaseUrl
-          value: cluster-95spm.95spm.sandbox2286.opentlc.com
+          value: cluster-xxxxx.xxxxx.sandbox0000.opentlc.com
         - name: "backstage.githubToken"
-          value: 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
+          value: ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
         - name: "backstage.db.adminPassword"
           value: backstage-postgres-admin-passwd
         - name: "keycloak.backstageClient.secret"
