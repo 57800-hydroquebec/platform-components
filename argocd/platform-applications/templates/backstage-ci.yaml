@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: "{{ .Values.gitOrg }}/backstage-showcase.git"
     path: .tekton
-    targetRevision: spectral-plugin-addition
+    targetRevision: "{{ .Values.gitRef }}"
   destination:
     server: https://kubernetes.default.svc
     namespace: developer-hub
