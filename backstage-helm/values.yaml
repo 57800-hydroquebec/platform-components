@@ -49,9 +49,10 @@ upstream:
               rejectUnauthorized: true
 
       integrations:
-        github:
-          - host: github.com
-            token: ${GITHUB_TOKEN}
+        bitbucket:
+          - host: bitbucket-developer-hub.apps.cluster-x8nlv.x8nlv.sandbox1300.opentlc.com
+            apiBaseUrl: https://bitbucket-developer-hub.apps.cluster-x8nlv.x8nlv.sandbox1300.opentlc.com/rest/api/1.0
+            token: ${GIT_TOKEN} # replace this with bitbucket server token generated manually
 
       catalog:
         import:
@@ -76,47 +77,26 @@ upstream:
                 frequency: { minutes: 1 }
                 timeout: { minutes: 1 }
                 initialDelay: { seconds: 15 }
-          github:
-            systems:
-              organization: 'janus-api-idp' # string
+          bitbucket:
+            systems: # identifies your ingested dataset
+              host: 'bitbucket-developer-hub.apps.cluster-x8nlv.x8nlv.sandbox1300.opentlc.com'
               catalogPath: '/systems/*.yaml' # string
-              filters:
-                branch: 'main' # string
-                repository: 'demo-systems' # Regex
-              schedule: # optional
+              filters: # optional
+                projectKey: '^apis-.*$' # optional; RegExp
+                repoSlug: '^service-.*$' # optional; RegExp
+              schedule: # optional; same options as in TaskScheduleDefinition
                 # supports cron, ISO duration, "human duration" as used in code
-                frequency: { minutes: 1 }
+                frequency: { minutes: 30 }
                 # supports ISO duration, "human duration" as used in code
-                timeout: { minutes: 1 }
-            components:
-              organization: 'janus-api-idp' # string
-              catalogPath: '/catalog-info.yaml' # string
-              filters:
-                branch: 'master' # string
-                repository: '.*' # Regex
-              schedule: # optional
-                # supports cron, ISO duration, "human duration" as used in code
-                frequency: { minutes: 1 }
-                # supports ISO duration, "human duration" as used in code
-                timeout: { minutes: 1 }
-            apis:
-              organization: 'janus-api-idp' # string
-              catalogPath: '/catalog-info.yaml' # string
-              filters:
-                branch: 'master' # string
-                repository: '.*' # Regex
-              schedule: # optional
-                # supports cron, ISO duration, "human duration" as used in code
-                frequency: { minutes: 1 }
-                # supports ISO duration, "human duration" as used in code
-                timeout: { minutes: 1 }
+                timeout: { minutes: 3 }
       auth:
         environment: production
         providers:
           oauth2Proxy: {}
       enabled:
-        github: true
+        github: false
         keycloak: true
+        bitbucket: true
 
     extraEnvVars:
     - name: POSTGRESQL_ADMIN_PASSWORD
@@ -124,7 +104,7 @@ upstream:
         secretKeyRef:
           key: postgres-password
           name: "{{ .Release.Name }}-db-postgresql"
-    - name: GITHUB_TOKEN
+    - name: GIT_TOKEN
       valueFrom:
         secretKeyRef:
           key: token
