@@ -78,7 +78,7 @@ upstream:
                 timeout: { minutes: 1 }
                 initialDelay: { seconds: 15 }
           bitbucketServer:
-            systems: # identifies your ingested dataset
+            yourProviderId: # identifies your ingested dataset
               host: 'bitbucket-developer-hub.apps.cluster-x8nlv.x8nlv.sandbox1300.opentlc.com'
               catalogPath: '/catalog-info.yaml' # string
               schedule: # optional; same options as in TaskScheduleDefinition
