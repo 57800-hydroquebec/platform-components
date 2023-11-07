@@ -94,7 +94,7 @@ upstream:
       enabled:
         github: true
         keycloak: true
-        bitbucket: true
+        bitbucketDiscovery: true
 
     extraEnvVars:
     - name: POSTGRESQL_ADMIN_PASSWORD
