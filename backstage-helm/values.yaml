@@ -49,7 +49,7 @@ upstream:
               rejectUnauthorized: true
 
       integrations:
-        bitbucket:
+        bitbucketServer:
           - host: bitbucket-developer-hub.apps.cluster-x8nlv.x8nlv.sandbox1300.opentlc.com
             apiBaseUrl: https://bitbucket-developer-hub.apps.cluster-x8nlv.x8nlv.sandbox1300.opentlc.com/rest/api/1.0
             token: ${GIT_TOKEN} # replace this with bitbucket server token generated manually
@@ -77,18 +77,15 @@ upstream:
                 frequency: { minutes: 1 }
                 timeout: { minutes: 1 }
                 initialDelay: { seconds: 15 }
-          bitbucket:
+          bitbucketServer:
             systems: # identifies your ingested dataset
               host: 'bitbucket-developer-hub.apps.cluster-x8nlv.x8nlv.sandbox1300.opentlc.com'
-              catalogPath: '/systems/*.yaml' # string
-              filters: # optional
-                projectKey: '^apis-.*$' # optional; RegExp
-                repoSlug: '^service-.*$' # optional; RegExp
+              catalogPath: '/catalog-info.yaml' # string
               schedule: # optional; same options as in TaskScheduleDefinition
                 # supports cron, ISO duration, "human duration" as used in code
-                frequency: { minutes: 30 }
+                frequency: { minutes: 1 }
                 # supports ISO duration, "human duration" as used in code
-                timeout: { minutes: 3 }
+                timeout: { minutes: 1 }
       auth:
         environment: production
         providers:
@@ -120,6 +117,8 @@ upstream:
       value: changeme
     - name: CONFLUENCE_PASSWORD
       value: changeme
+    - name: LOG_LEVEL
+      value: debug      
     extraContainers:
     - name: "oauth2-proxy"
       env:
