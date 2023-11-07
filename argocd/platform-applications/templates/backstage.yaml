@@ -14,7 +14,7 @@ spec:
         - name: "global.clusterRouterBase"
           value: "apps.{{ .Values.clusterBaseUrl }}"
         - name: "github.token"
-          value: "{{ .Values.backstage.githubToken }}"
+          value: "{{ .Values.backstage.gitToken }}"
         - name: "global.keycloak.backstageClient.secret"
           value: "{{ .Values.keycloak.backstageClient.secret }}"
   destination:

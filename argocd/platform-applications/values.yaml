@@ -5,7 +5,7 @@ gitRef: main
 clusterBaseUrl: example.cluster.com
 
 backstage:
-  githubToken: replaceme
+  gitToken: replaceme
   db:
     adminPassword: replaceme
 
