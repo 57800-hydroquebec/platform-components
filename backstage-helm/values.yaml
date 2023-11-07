@@ -222,5 +222,5 @@ route:
     # <br /> While each router may make its own decisions on which ports to expose, this is normally port 80. The only valid values are None, Redirect, or empty for disabled.
     insecureEdgeTerminationPolicy: "Redirect"
 
-github:
+git:
   token: changeme

@@ -13,7 +13,7 @@ spec:
       parameters:
         - name: "global.clusterRouterBase"
           value: "apps.{{ .Values.clusterBaseUrl }}"
-        - name: "github.token"
+        - name: "git.token"
           value: "{{ .Values.backstage.gitToken }}"
         - name: "global.keycloak.backstageClient.secret"
           value: "{{ .Values.keycloak.backstageClient.secret }}"
