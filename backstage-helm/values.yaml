@@ -84,6 +84,7 @@ upstream:
               schedule: # optional; same options as in TaskScheduleDefinition
                 # supports cron, ISO duration, "human duration" as used in code
                 frequency: { minutes: 1 }
+                initialDelay: { seconds: 15 }
                 # supports ISO duration, "human duration" as used in code
                 timeout: { minutes: 1 }
       auth:
@@ -91,7 +92,7 @@ upstream:
         providers:
           oauth2Proxy: {}
       enabled:
-        github: false
+        github: true
         keycloak: true
         bitbucket: true
 
