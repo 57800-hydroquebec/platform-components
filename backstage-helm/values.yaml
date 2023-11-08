@@ -50,8 +50,8 @@ upstream:
 
       integrations:
         bitbucketServer:
-          - host: {{.Values.global.clusterRouterBase }}
-            apiBaseUrl: https://{{ .Values.global.clusterRouterBase }}/rest/api/1.0
+          - host: bitbucket-bitbucket{{.Values.global.clusterRouterBase }}
+            apiBaseUrl: bitbucket-bitbucket{{.Values.global.clusterRouterBase }}/rest/api/1.0
             token: ${GIT_TOKEN} # replace this with bitbucket server token generated manually
 
       catalog:
@@ -79,29 +79,26 @@ upstream:
                 initialDelay: { seconds: 15 }
           bitbucketServer:
             systems:
-              organization: 'janus-api-idp' # string
-              catalogPath: '/systems/*.yaml' # string
-              filters:
-                branch: 'main' # string
-                repository: 'demo-systems' # Regex
-              schedule: # optional
-                # supports cron, ISO duration, "human duration" as used in code
+              host: 'bitbucket-bitbucket{{.Values.global.clusterRouterBase }}'
+              catalogPath: '/systems/*.yaml'
+              schedule:
                 frequency: { minutes: 1 }
-                # supports ISO duration, "human duration" as used in code
+                initialDelay: { seconds: 15 }
                 timeout: { minutes: 1 }
             components:
-              organization: 'janus-api-idp' # string
-              catalogPath: '/catalog-info.yaml' # string
-              filters:
-                branch: 'master' # string
-                repository: '.*' # Regex
-              schedule: # optional
-                # supports cron, ISO duration, "human duration" as used in code
+              host: 'bitbucket-bitbucket{{.Values.global.clusterRouterBase }}'
+              catalogPath: '/catalog-info.yaml'
+              schedule:
                 frequency: { minutes: 1 }
-                # supports ISO duration, "human duration" as used in code
+                initialDelay: { seconds: 15 }
                 timeout: { minutes: 1 }
             apis:
-              organization: 'janus-api-idp' # string                
+              host: 'bitbucket-bitbucket{{.Values.global.clusterRouterBase }}'
+              catalogPath: '/catalog-info.yaml'
+              schedule:
+                frequency: { minutes: 1 }
+                initialDelay: { seconds: 15 }
+                timeout: { minutes: 1 }              
       auth:
         environment: production
         providers:
