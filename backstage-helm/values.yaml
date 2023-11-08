@@ -50,8 +50,8 @@ upstream:
 
       integrations:
         bitbucketServer:
-          - host: bitbucket-developer-hub.apps.cluster-x8nlv.x8nlv.sandbox1300.opentlc.com
-            apiBaseUrl: https://bitbucket-developer-hub.apps.cluster-x8nlv.x8nlv.sandbox1300.opentlc.com/rest/api/1.0
+          - host: {{.Values.global.clusterRouterBase }}
+            apiBaseUrl: https://{{ .Values.global.clusterRouterBase }}/rest/api/1.0
             token: ${GIT_TOKEN} # replace this with bitbucket server token generated manually
 
       catalog:
@@ -78,15 +78,30 @@ upstream:
                 timeout: { minutes: 1 }
                 initialDelay: { seconds: 15 }
           bitbucketServer:
-            yourProviderId: # identifies your ingested dataset
-              host: 'bitbucket-developer-hub.apps.cluster-x8nlv.x8nlv.sandbox1300.opentlc.com'
-              catalogPath: '/catalog-info.yaml' # string
-              schedule: # optional; same options as in TaskScheduleDefinition
+            systems:
+              organization: 'janus-api-idp' # string
+              catalogPath: '/systems/*.yaml' # string
+              filters:
+                branch: 'main' # string
+                repository: 'demo-systems' # Regex
+              schedule: # optional
                 # supports cron, ISO duration, "human duration" as used in code
                 frequency: { minutes: 1 }
-                initialDelay: { seconds: 15 }
                 # supports ISO duration, "human duration" as used in code
                 timeout: { minutes: 1 }
+            components:
+              organization: 'janus-api-idp' # string
+              catalogPath: '/catalog-info.yaml' # string
+              filters:
+                branch: 'master' # string
+                repository: '.*' # Regex
+              schedule: # optional
+                # supports cron, ISO duration, "human duration" as used in code
+                frequency: { minutes: 1 }
+                # supports ISO duration, "human duration" as used in code
+                timeout: { minutes: 1 }
+            apis:
+              organization: 'janus-api-idp' # string                
       auth:
         environment: production
         providers:
@@ -117,9 +132,7 @@ upstream:
     - name: CONFLUENCE_USERNAME
       value: changeme
     - name: CONFLUENCE_PASSWORD
-      value: changeme
-    - name: LOG_LEVEL
-      value: debug      
+      value: changeme     
     extraContainers:
     - name: "oauth2-proxy"
       env:
