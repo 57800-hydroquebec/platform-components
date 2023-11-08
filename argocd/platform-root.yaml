@@ -17,7 +17,7 @@ spec:
           value: main
         - name: clusterBaseUrl
           value: cluster-xxxxx.xxxxx.sandbox0000.opentlc.com
-        - name: "backstage.githubToken"
+        - name: "backstage.gitToken"
           value: ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
         - name: "backstage.db.adminPassword"
           value: backstage-postgres-admin-passwd

@@ -49,9 +49,10 @@ upstream:
               rejectUnauthorized: true
 
       integrations:
-        github:
-          - host: github.com
-            token: ${GITHUB_TOKEN}
+        bitbucketServer:
+          - host: bitbucket-bitbucket{{.Values.global.clusterRouterBase }}
+            apiBaseUrl: bitbucket-bitbucket{{.Values.global.clusterRouterBase }}/rest/api/1.0
+            token: ${GIT_TOKEN} # replace this with bitbucket server token generated manually
 
       catalog:
         import:
@@ -76,40 +77,28 @@ upstream:
                 frequency: { minutes: 1 }
                 timeout: { minutes: 1 }
                 initialDelay: { seconds: 15 }
-          github:
+          bitbucketServer:
             systems:
-              organization: 'janus-api-idp' # string
-              catalogPath: '/systems/*.yaml' # string
-              filters:
-                branch: 'main' # string
-                repository: 'demo-systems' # Regex
-              schedule: # optional
-                # supports cron, ISO duration, "human duration" as used in code
+              host: 'bitbucket-bitbucket{{.Values.global.clusterRouterBase }}'
+              catalogPath: '/systems/*.yaml'
+              schedule:
                 frequency: { minutes: 1 }
-                # supports ISO duration, "human duration" as used in code
+                initialDelay: { seconds: 15 }
                 timeout: { minutes: 1 }
             components:
-              organization: 'janus-api-idp' # string
-              catalogPath: '/catalog-info.yaml' # string
-              filters:
-                branch: 'master' # string
-                repository: '.*' # Regex
-              schedule: # optional
-                # supports cron, ISO duration, "human duration" as used in code
+              host: 'bitbucket-bitbucket{{.Values.global.clusterRouterBase }}'
+              catalogPath: '/catalog-info.yaml'
+              schedule:
                 frequency: { minutes: 1 }
-                # supports ISO duration, "human duration" as used in code
+                initialDelay: { seconds: 15 }
                 timeout: { minutes: 1 }
             apis:
-              organization: 'janus-api-idp' # string
-              catalogPath: '/catalog-info.yaml' # string
-              filters:
-                branch: 'master' # string
-                repository: '.*' # Regex
-              schedule: # optional
-                # supports cron, ISO duration, "human duration" as used in code
+              host: 'bitbucket-bitbucket{{.Values.global.clusterRouterBase }}'
+              catalogPath: '/catalog-info.yaml'
+              schedule:
                 frequency: { minutes: 1 }
-                # supports ISO duration, "human duration" as used in code
-                timeout: { minutes: 1 }
+                initialDelay: { seconds: 15 }
+                timeout: { minutes: 1 }              
       auth:
         environment: production
         providers:
@@ -117,6 +106,7 @@ upstream:
       enabled:
         github: true
         keycloak: true
+        bitbucketDiscovery: true
 
     extraEnvVars:
     - name: POSTGRESQL_ADMIN_PASSWORD
@@ -124,7 +114,7 @@ upstream:
         secretKeyRef:
           key: postgres-password
           name: "{{ .Release.Name }}-db-postgresql"
-    - name: GITHUB_TOKEN
+    - name: GIT_TOKEN
       valueFrom:
         secretKeyRef:
           key: token
@@ -139,7 +129,7 @@ upstream:
     - name: CONFLUENCE_USERNAME
       value: changeme
     - name: CONFLUENCE_PASSWORD
-      value: changeme
+      value: changeme     
     extraContainers:
     - name: "oauth2-proxy"
       env:
@@ -222,5 +212,5 @@ route:
     # <br /> While each router may make its own decisions on which ports to expose, this is normally port 80. The only valid values are None, Redirect, or empty for disabled.
     insecureEdgeTerminationPolicy: "Redirect"
 
-github:
+git:
   token: changeme
