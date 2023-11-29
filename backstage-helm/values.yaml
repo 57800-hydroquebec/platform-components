@@ -14,10 +14,9 @@ global:
     plugins: []
 
   # -- Shorthand for users who do not want to specify a custom HOSTNAME. Used ONLY with the DEFAULT upstream.backstage.appConfig value and with OCP Route enabled.
-  clusterRouterBase: apps.example.com
+  clusterRouterBase: app.example.com
   # -- Custom hostname shorthand, overrides `global.clusterRouterBase`, `upstream.ingress.host`, `route.host`, and url values in `upstream.backstage.appConfig`
   host: ""
-  # -- Enable service authentication within Backstage instance
   auth:
     # -- Backend service to service authentication
     # <br /> Ref: https://backstage.io/docs/auth/service-to-service-auth/
@@ -28,6 +27,12 @@ global:
       existingSecret: ""
       # -- Instead of generating a secret value, use fo;lowing value
       value: ""
+  keycloak:
+    prefixBaseUrl: "https://keycloak-keycloak."
+    backstageClient:
+      id: "backstage"
+      secret: my-secret
+      oidcIssuerUrlSuffix: "/auth/realms/backstage"
 
 # -- Upstream Backstage [chart configuration](https://github.com/backstage/charts/blob/main/charts/backstage/values.yaml)
 # @default -- Use Openshift compatible settings
@@ -35,8 +40,8 @@ upstream:
   nameOverride: backstage
   backstage:
     image:
-      registry: quay.io
-      repository: janus-idp/backstage-showcase
+      registry: image-registry.openshift-image-registry.svc:5000
+      repository: developer-hub/backstage-showcase
       tag: latest
     command: []
     # FIXME (tumido): USE POSTGRES_PASSWORD and POSTGRES_USER instead of POSTGRES_ADMIN_PASSWORD
@@ -50,17 +55,82 @@ upstream:
       app:
         # Please update to match host in case you don't want to configure hostname via `global.clusterRouterBase` or `global.host`.
         baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
+
       backend:
         baseUrl: 'https://{{- include "janus-idp.hostname" . }}'
         cors:
           origin: 'https://{{- include "janus-idp.hostname" . }}'
         database:
+          client: pg
           connection:
             password: ${POSTGRESQL_ADMIN_PASSWORD}
             user: postgres
+            host: "{{ .Release.Name }}-db-postgresql" #Matches with the host of the deployed postgresql instance
+            port: 5432
+            ssl:
+              ca: ${CA_CERT}
+              require: true
+              rejectUnauthorized: true
         auth:
           keys:
             - secret: ${BACKEND_SECRET}
+
+      integrations:
+        github:
+          - host: github.com
+            token: ${GITHUB_TOKEN}
+
+      catalog:
+        import:
+          entityFilename: catalog-info.yaml
+          pullRequestBranchName: backstage-integration
+        rules:
+          - allow: [Component, System, Group, Resource, Location, Template, API]
+        locations:
+          - type: url
+            target: https://github.com/janus-idp/backstage-showcase/blob/main/catalog-entities/all.yaml
+          - type: url
+            target: https://github.com/janus-api-idp/software-templates/blob/main/template-index.yaml
+        providers:
+          keycloakOrg:
+            default:
+              baseUrl: "{{ .Values.global.keycloak.prefixBaseUrl }}{{ .Values.global.clusterRouterBase }}/auth"
+              loginRealm: "{{ .Values.global.keycloak.backstageClient.id }}"
+              realm: "{{ .Values.global.keycloak.backstageClient.id }}"
+              clientId: "{{ .Values.global.keycloak.backstageClient.id }}"
+              clientSecret: "{{ .Values.global.keycloak.backstageClient.secret }}"
+              schedule:
+                frequency: { minutes: 1 }
+                timeout: { minutes: 1 }
+                initialDelay: { seconds: 15 }
+          github:
+            systems:
+              organization: 'janus-api-idp' # string
+              catalogPath: '/systems/*.yaml' # string
+              filters:
+                branch: 'main' # string
+                repository: 'demo-systems' # Regex
+              schedule: # optional
+                frequency: { minutes: 1 }
+                timeout: { minutes: 1 }
+                initialDelay: { seconds: 15 }
+            systemEntities:
+              organization: 'janus-api-idp' # string
+              catalogPath: '/catalog-info.yaml' # string
+              filters:
+                branch: 'master' # string
+                repository: '.*' # Regex
+              schedule: # optional
+                frequency: { minutes: 1 }
+                timeout: { minutes: 1 }
+                initialDelay: { seconds: 15 }
+      auth:
+        environment: production
+        providers:
+          oauth2Proxy: {}
+      enabled:
+        github: true
+        keycloak: true
     readinessProbe:
       failureThreshold: 3
       httpGet:
@@ -82,17 +152,32 @@ upstream:
       successThreshold: 1
       timeoutSeconds: 2
     extraEnvVars:
-      - name: BACKEND_SECRET
+    - name: BACKEND_SECRET
         valueFrom:
           secretKeyRef:
             key: backend-secret
             name: '{{ include "janus-idp.backend-secret-name" $ }}'
-      - name: POSTGRESQL_ADMIN_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            key: postgres-password
-            name: '{{- include "janus-idp.postgresql.secretName" . }}'
-
+    - name: POSTGRESQL_ADMIN_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: postgres-password
+          name: "{{ .Release.Name }}-db-postgresql"
+    - name: GITHUB_TOKEN
+      valueFrom:
+        secretKeyRef:
+          key: token
+          name: "{{ .Release.Name }}-git-auth"
+    - name: CA_CERT
+      valueFrom:
+        secretKeyRef:
+          key: ca.crt
+          name: "{{ .Release.Name }}-db-postgresql-tls" # Should match with the name of the secret where the CA for the postgresql server is stored
+    - name: CONFLUENCE_URL
+      value: changeme
+    - name: CONFLUENCE_USERNAME
+      value: changeme
+    - name: CONFLUENCE_PASSWORD
+      value: changeme
     args:
       # This additional `app-config`` file is generated by the initContainer below, and contains the merged configuration of installed dynamic plugins.
       - '--config'
@@ -113,7 +198,6 @@ upstream:
                 requests:
                   # -- Size of the volume that will contain the dynamic plugins. It should be large enough to contain all the plugins.
                   storage: 1Gi
-
       # Volume that will expose the `dynamic-plugins.yaml` file from the `dynamic-plugins` config map.
       # The `dynamic-plugins` config map is created by the helm chart from the content of the `global.dynamic` field.
       - name: dynamic-plugins
@@ -133,7 +217,10 @@ upstream:
         # -- Image used by the initContainer to install dynamic plugins into the `dynamic-plugins-root` volume mount.
         # It could be replaced by a custom image based on this one.
         # @default -- `quay.io/janus-idp/backstage-showcase:latest`
-        image: '{{ include "backstage.image" . }}'
+        image:
+          registry: image-registry.openshift-image-registry.svc:5000
+          repository: developer-hub/backstage-showcase
+          tag: latest
         command:
           - ./install-dynamic-plugins.sh
           - /dynamic-plugins-root
@@ -158,37 +245,46 @@ upstream:
       checksum/dynamic-plugins: >-
         {{- include "common.tplvalues.render" ( dict "value"
         .Values.global.dynamic "context" $) | sha256sum }}
+    extraContainers:
+    - name: "oauth2-proxy"
+      env:
+        - name: OAUTH2_PROXY_CLIENT_ID
+          value: "{{ .Values.global.keycloak.backstageClient.id }}"
+        - name: OAUTH2_PROXY_CLIENT_SECRET
+          value: "{{ .Values.global.keycloak.backstageClient.secret }}"
+        - name: OAUTH2_PROXY_COOKIE_SECRET
+          value: 'fksdZJWUhzlfGw3Ve6POYc2jmjZogjCh'
+        - name: OAUTH2_PROXY_OIDC_ISSUER_URL
+          value: "{{ .Values.global.keycloak.prefixBaseUrl }}{{ .Values.global.clusterRouterBase }}{{ .Values.global.keycloak.backstageClient.oidcIssuerUrlSuffix }}"
+        - name: OAUTH2_PROXY_SSL_INSECURE_SKIP_VERIFY
+          value: 'true'
+      ports:
+        - name: "oauth2-proxy"
+          containerPort: 4180
+          protocol: TCP
+      imagePullPolicy: IfNotPresent
+      image: "quay.io/oauth2-proxy/oauth2-proxy:latest"
+      args:
+        - '--provider=oidc'
+        - '--email-domain=*'
+        - '--upstream=http://localhost:7007'
+        - '--http-address=0.0.0.0:4180'
+        - '--skip-provider-button'
+
+  service:
+    ports:
+      backend: 4180
+      targetPort: oauth2-proxy
+
   postgresql:
-    enabled: true
-    postgresqlDataDir: /var/lib/pgsql/data/userdata
-    image:
-      registry: quay.io
-      repository: fedora/postgresql-15
-      tag: latest
-    auth:
-      secretKeys:
-        adminPasswordKey: postgres-password
-        userPasswordKey: password
-    primary:
-      podSecurityContext:
-        enabled: false
-      containerSecurityContext:
-        enabled: false
-      persistence:
-        enabled: true
-        size: 1Gi
-        mountPath: /var/lib/pgsql/data
-      extraEnvVars:
-        - name: POSTGRESQL_ADMIN_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              key: postgres-password
-              name: '{{- include "postgresql.v1.secretName" . }}'
+    enabled: false #Disabled when using an external connection
+
   ingress:
-    host: "{{ .Values.global.host }}"
+    enabled: false
 
 # -- OpenShift Route parameters
 route:
+
   # -- Route specific annotations
   annotations: {}
 
@@ -207,6 +303,7 @@ route:
   # -- Route TLS parameters
   # <br /> Ref: https://docs.openshift.com/container-platform/4.9/networking/routes/secured-routes.html
   tls:
+
     # -- Enable TLS configuration for the host defined at `route.host` parameter
     enabled: true
 
@@ -229,3 +326,6 @@ route:
     # --  Indicates the desired behavior for insecure connections to a route.
     # <br /> While each router may make its own decisions on which ports to expose, this is normally port 80. The only valid values are None, Redirect, or empty for disabled.
     insecureEdgeTerminationPolicy: "Redirect"
+
+github:
+  token: changeme
