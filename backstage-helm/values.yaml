@@ -217,10 +217,7 @@ upstream:
         # -- Image used by the initContainer to install dynamic plugins into the `dynamic-plugins-root` volume mount.
         # It could be replaced by a custom image based on this one.
         # @default -- `quay.io/janus-idp/backstage-showcase:latest`
-        image:
-          registry: image-registry.openshift-image-registry.svc:5000
-          repository: developer-hub/backstage-showcase
-          tag: latest
+        image: 'image-registry.openshift-image-registry.svc:5000/developer-hub/backstage-showcase:latest'
         command:
           - ./install-dynamic-plugins.sh
           - /dynamic-plugins-root
