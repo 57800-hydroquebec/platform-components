@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: "https://github.com/janus-api-idp/backstage-showcase.git"
     path: .tekton
-    targetRevision: main
+    targetRevision: rhdh-ga
   destination:
     server: https://kubernetes.default.svc
     namespace: developer-hub
